@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Keep these files
+!connector.py
+!setup.md
+!.gitignore
