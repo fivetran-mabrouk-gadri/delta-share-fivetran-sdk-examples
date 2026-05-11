@@ -58,7 +58,59 @@ Do not commit this file to source control.
 
 ---
 
-## 3. Local Testing
+## 3. Exploring the Share
+
+Before running the connector, use `explore.py` to browse the share and verify your credentials and table structure.
+
+### The `config.share` file
+
+`explore.py` authenticates using a `.share` profile file — a JSON file provided by the Delta Sharing provider. It must be present locally and is **not** the same as `configuration.json`.
+
+Format:
+
+```json
+{
+    "shareCredentialsVersion": 1,
+    "endpoint": "<your_delta_sharing_endpoint>",
+    "bearerToken": "<your_bearer_token>",
+    "expirationTime": "9999-12-31T00:00:00.000Z"
+}
+```
+
+Save it as `config.share` in the project root. Do not commit it to source control.
+
+### List all available tables
+
+```bash
+python explore.py config.share
+```
+
+Output:
+
+```
+3 table(s) available:
+
+  my_share.my_schema.customer
+  my_share.my_schema.district
+```
+
+### Inspect a table (schema + sample rows)
+
+```bash
+python explore.py config.share my_share.my_schema.district
+```
+
+### Inspect with a custom row limit
+
+```bash
+python explore.py config.share my_share.my_schema.customer --limit 25
+```
+
+This prints the column names, data types, and a sample of rows — useful for verifying the table structure before configuring `configuration.json`.
+
+---
+
+## 4. Local Testing
 
 The Fivetran SDK provides a `debug` mode that runs the connector locally and writes output to a local DuckDB file (`warehouse.db`).
 
@@ -80,7 +132,7 @@ fivetran reset
 
 ---
 
-## 4. Inspecting the Output (DuckDB)
+## 5. Inspecting the Output (DuckDB)
 
 After a successful run, the SDK writes results to `warehouse.db` in the project root.
 
@@ -136,9 +188,9 @@ print(con.execute("SELECT COUNT(*) FROM customer").fetchone())
 
 ---
 
-## 5. Deployment to Fivetran
+## 6. Deployment to Fivetran
 
-### 5.1 Log in to Fivetran
+### 6.1 Log in to Fivetran
 
 ```bash
 fivetran login
@@ -146,7 +198,7 @@ fivetran login
 
 This opens a browser window to authenticate with your Fivetran account.
 
-### 5.2 Deploy the connector
+### 6.2 Deploy the connector
 
 ```bash
 fivetran deploy --configuration configuration.json
@@ -154,14 +206,14 @@ fivetran deploy --configuration configuration.json
 
 The CLI will prompt you to select or create a destination and connector name. On success, it returns a connector ID.
 
-### 5.3 Configure in the Fivetran dashboard
+### 6.3 Configure in the Fivetran dashboard
 
 1. Go to **Fivetran Dashboard → Connectors**
 2. Find your deployed connector
 3. Enter the configuration values (bearer token, endpoint, share name, schema name) in the connector settings form
 4. Trigger a manual sync or set a sync schedule
 
-### 5.4 Monitor sync
+### 6.4 Monitor sync
 
 Sync logs and run history are available in the Fivetran dashboard under the connector's **Logs** tab.
 
