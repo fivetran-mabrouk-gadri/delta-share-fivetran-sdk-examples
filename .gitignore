@@ -4,5 +4,6 @@
 # Keep these files
 !connector.py
 !explore.py
+!requirements.txt
 !setup.md
 !.gitignore
