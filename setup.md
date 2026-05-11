@@ -190,28 +190,56 @@ print(con.execute("SELECT COUNT(*) FROM customer").fetchone())
 
 ## 6. Deployment to Fivetran
 
-### 6.1 Log in to Fivetran
+### 6.1 Get your API key
+
+In the Fivetran dashboard go to **Settings → API Config** and copy your API key and API secret. The deploy command expects them Base64-encoded in the format `{API-key}:{API-secret}`.
+
+Encode on Linux/macOS:
 
 ```bash
-fivetran login
+echo -n "your_api_key:your_api_secret" | base64
 ```
 
-This opens a browser window to authenticate with your Fivetran account.
+Encode on Windows (PowerShell):
+
+```powershell
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("your_api_key:your_api_secret"))
+```
+
+Set it as an environment variable to avoid retyping:
+
+```bash
+export FIVETRAN_API_KEY="<base64_encoded_key>"   # Linux/macOS
+```
+
+```powershell
+$env:FIVETRAN_API_KEY="<base64_encoded_key>"     # Windows
+```
 
 ### 6.2 Deploy the connector
 
 ```bash
-fivetran deploy --configuration configuration.json
+fivetran deploy --api-key <BASE64_API_KEY> --destination <DESTINATION_NAME> --connection <CONNECTION_NAME> --configuration configuration.json
 ```
 
-The CLI will prompt you to select or create a destination and connector name. On success, it returns a connector ID.
+- `--destination`: name of the destination as shown in your Fivetran dashboard
+- `--connection`: name for this connection (must start with `_` or a lowercase letter, only lowercase letters, digits, and `_` allowed — no uppercase)
 
-### 6.3 Configure in the Fivetran dashboard
+Example:
 
-1. Go to **Fivetran Dashboard → Connectors**
-2. Find your deployed connector
-3. Enter the configuration values (bearer token, endpoint, share name, schema name) in the connector settings form
-4. Trigger a manual sync or set a sync schedule
+```bash
+fivetran deploy --api-key dlkh34o8== --destination MyWarehouse --connection delta_share_connector --configuration configuration.json
+```
+
+To redeploy after code changes, run the same command again with the same connection and destination names.
+
+### 6.3 Start syncing
+
+New connections are **paused by default**. Unpause using one of:
+
+- **Dashboard**: go to **Connections**, select your connector, then click **Start Initial Sync** or toggle to Enabled
+- **Terminal link**: click the URL printed in the deploy output
+- **REST API**: use the connection ID printed in the deploy log to call the "Update a Connection" endpoint
 
 ### 6.4 Monitor sync
 
